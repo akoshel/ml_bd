@@ -6,10 +6,10 @@
 Последовательность команд в P2.txt
 
 #### Пункт 3
-Скрипты для среднего - mapper.py, reducer.py
-Скрипты для дисперсии - mapper_var.py, reducer_var.py
-Итоги расчетов result.txt
-Результат выполнения скриптов в папках out_mean, out_var
+Скрипты для среднего - mapper.py, reducer.py </br>
+Скрипты для дисперсии - mapper_var.py, reducer_var.py </br>
+Итоги расчетов result.txt </br>
+Результат выполнения скриптов в папках out_mean, out_var </br>
 
 
 
