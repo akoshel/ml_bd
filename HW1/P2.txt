@@ -1,0 +1,18 @@
+Часть 1
+2.1 hdfs dfs -mkdir /HW1
+2.2 hdfs dfs -mkdir /HW1/HW_internal
+2.3 Trash помогает предотвратить случайные удаления файлов или директорий. Файлы после удаления попадают в Trash после законфигурированного времени они удалятся. Чтобы миновать trash при удалении необходимо добавить флаг -skipTrash. hdfs dfs -rm -skipTrash <file>
+2.4 hdfs dfs -touchz /HW1/HW_internal/HW_file.txt
+2.5 hdfs dfs -rm /HW1/HW_internal/HW_file.txt
+2.6 hdfs dfs -rm -r /HW1
+Часть 2
+2.1 hdfs dfs -put train.csv /Step2/
+2.2 hdfs dfs -cat /Step2/train.csv
+2.3 hdfs dfs -tail /Step2/train.csv Показывает последний килобайт
+2.4 hdfs dfs -head /Step2/train.csv Показывает первый килобайт
+2.5 hdfs dfs -cp /Step2/train.csv /copy_train.csv
+
+Часть 3
+2.1 hdfs dfs -setrep -w 2 /copy_train.csv (Заняло около минуты)
+2.2 hdfs fsck /Step2/train.csv -files -blocks -locations
+2.3 hdfs fsck -blockId blk_1073741836
