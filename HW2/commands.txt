@@ -1,0 +1,69 @@
+2.1 Создать таблицу
+docker cp artists.csv docker-hadoop-hive-parquet_hive-server_1:/
+/opt/hive/bin/beeline -u jdbc:hive2://localhost:10000
+CREATE TABLE artists (mbid STRING, artist_mb STRING, artist_lastfm STRING, country_mb STRING, country_lastfm STRING, tags_mb STRING, tags_lastfm STRING, listeners_lastfm INT, scrobbles_lastfm INT, ambiguous_artist BOOLEAN) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n' 
+LOAD DATA LOCAL INPATH "/artists.csv" OVERWRITE INTO TABLE artists;
+
+2.a The Beatles
+SELECT b.artist_lastfm FROM artists as b
+WHERE b.scrobbles_lastfm IN (SELECT MAX(a.scrobbles_lastfm) FROM artists as a);
+	
+2.b seen live
+SELECT t2.mycol1, COUNT(t2.mycol1) as cnt FROM (
+SELECT myCol1 FROM (SELECT split(tags_lastfm, '; ') AS tag FROM artists) t1
+LATERAL VIEW explode(tag) myTable1 AS myCol1 where myCol1 != '') t2
+GROUP BY t2.mycol1
+ORDER BY cnt DESC
+LIMIT 1
+
+2.с
+The Beatles, Radiohead, Coldplay, Muse, Arctic Monkeys, Pink Floyd, Linkin Park, Red Hot Chili Peppers, Lady Gaga, Metallica
+
+WITH top_tags as 
+    (SELECT t2.mycol1, COUNT(t2.mycol1) as cnt FROM (
+	SELECT myCol1 FROM (SELECT split(tags_lastfm, '; ') AS tag FROM artists) t1
+	LATERAL VIEW explode(tag) myTable1 AS myCol1 where myCol1 != '') t2
+	GROUP BY t2.mycol1
+	ORDER BY cnt DESC
+	LIMIT 10),
+
+top_artists AS(
+    SELECT * FROM
+    (SELECT artist_lastfm, scrobbles_lastfm, myCol2 FROM (
+    SELECT artist_lastfm, scrobbles_lastfm, split(tags_lastfm, '; ') AS tag
+    FROM artists) t1
+    LATERAL VIEW explode(tag) myTable1 AS myCol2
+    WHERE myCol2 != '') t3 
+    WHERE myCol2 IN (SELECT mycol1 FROM top_tags))
+    
+SELECT artist_lastfm, MAX(scrobbles_lastfm) AS max_scrob FROM top_artists
+GROUP BY artist_lastfm
+ORDER BY max_scrob DESC
+LIMIT 10
+
+
+2d Свой инсайд: топ 5 попсовых исполнителей по числу слушателей
+Red Hot Chili Peppers, Eminem, Kanye West, Foo Fighters, Linkin Park, Lady Gaga, Green Day, Katy Perry, Beyoncé, Michael Jackson
+
+WITH top_tags as 
+    (SELECT t2.mycol1, COUNT(t2.mycol1) as cnt FROM (
+	SELECT myCol1 FROM (SELECT split(tags_lastfm, '; ') AS tag FROM artists) t1
+	LATERAL VIEW explode(tag) myTable1 AS myCol1 where myCol1 != '') t2
+	GROUP BY t2.mycol1
+	ORDER BY cnt DESC
+	LIMIT 10),
+
+top_artists AS(
+    SELECT * FROM
+    (SELECT artist_lastfm, listeners_lastfm, country_lastfm, myCol2 FROM (
+    SELECT artist_lastfm, listeners_lastfm, country_lastfm, split(tags_lastfm, '; ') AS tag
+    FROM artists) t1
+    LATERAL VIEW explode(tag) myTable1 AS myCol2
+    WHERE myCol2 != '') t3 
+    WHERE myCol2 IN (SELECT mycol1 FROM top_tags))
+
+select artist_lastfm
+FROM top_artists
+where mycol2 = "pop" AND country_lastfm = "United States"
+ORDER BY listeners_lastfm DESC 
+LIMIT 5
